@@ -3,19 +3,17 @@ name: artigianofast github workflow
 on:
   push:
     branches: [ "main" ]
-
 jobs:
   build:
-
-    runs-on: self-hosted
-
-    strategy:
-      matrix:
-        node-version: [18.19.0]
-
-        
+    runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
     - name: deploy to server
       uses: appleboy/ssh-action@master
       with:
