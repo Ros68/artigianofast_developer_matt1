@@ -24,3 +24,11 @@ jobs:
             sudo -s
             cd /home/ubuntu/artigianofast
             git pull origin main
+            sudo docker compose up -d 
+            echo "Deployed successfully"
+            pm2 restart all
+            echo "PM2 restarted successfully"
+            sudo systemctl restart nginx 
+            echo "Nginx restarted successfully"
+            exit 0
+            
