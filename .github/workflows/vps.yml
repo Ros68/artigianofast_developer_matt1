@@ -1,0 +1,28 @@
+name: artigianofast github workflow 
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [18.19.0]
+
+        
+    steps:
+    - uses: actions/checkout@v4
+    - name: deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}          
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+            sudo -s
+            cd /home/ubuntu/artigianofast
+            git pull origin main
