@@ -3,6 +3,7 @@ import { Switch, Route, useLocation, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "./components/ui/toaster";
+import { Capacitor } from "@capacitor/core";
 import NotFound from "./pages/not-found";
 import Home from "./pages/home";
 import ActivatePage from "./pages/activate";
@@ -70,9 +71,19 @@ function Router() {
 
   console.log("Current location:", location);
   
-  // Default to desktop experience on root
+  // Check if running in Capacitor native app
+  const isNativeApp = Capacitor.isNativePlatform();
+  console.log("Is native app:", isNativeApp);
+  
+  // Default routing: mobile app goes to mobile, web goes to desktop
   if (location === '/') {
-    return <Redirect to="/desktop" />;
+    if (isNativeApp) {
+      // In mobile app, redirect to mobile login
+      return <Redirect to="/mobile" />;
+    } else {
+      // In web browser, redirect to desktop
+      return <Redirect to="/desktop" />;
+    }
   }
   
   // Mobile app routes - accessible via /mobile prefix

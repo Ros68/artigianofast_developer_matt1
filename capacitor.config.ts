@@ -21,10 +21,12 @@ const config: CapacitorConfig = {
     },
   },
   server: {
-    androidScheme: 'http',
-    cleartext: true,
+    androidScheme: 'https',
+    cleartext: false,
     allowNavigation: ['*'],
-    url: 'http://192.168.100.183:3000'
+    // Remove url to use bundled assets in production
+    // API calls will use https://artigianofast.com via mobileApi.ts
+    // url: 'https://artigianofast.com' // Uncomment for remote server mode
   }
 };
 

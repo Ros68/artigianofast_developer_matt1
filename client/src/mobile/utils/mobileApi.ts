@@ -33,9 +33,10 @@ export const mobileApiCall = async (method: string, endpoint: string, data?: any
   }
   const fullUrl = `${MOBILE_API_BASE_URL}${mobileEndpoint}`;
   
+  console.log('🌐 Mobile API Call:', { method, fullUrl, endpoint });
+  
   // Get stored mobile session ID for mobile app
   const mobileSessionId = localStorage.getItem('mobileSessionId');
-  
   
   const options: RequestInit = {
     method,
@@ -45,29 +46,58 @@ export const mobileApiCall = async (method: string, endpoint: string, data?: any
     },
     credentials: 'include',
     cache: 'no-store',
+    mode: 'cors', // Explicitly set CORS mode
   };
   
   if (data) {
     options.body = JSON.stringify(data);
   }
   
-  const response = await fetch(fullUrl, options);
-  
-  // Extract and store mobile session ID from response
-  if (response.ok && method === 'POST' && (endpoint === '/login' || endpoint === '/api/mobile/login' || endpoint === '/register' || endpoint === '/api/mobile/register')) {
-    try {
-      const responseData = await response.clone().json();
-      
-      if (responseData.mobileSessionId) {
-        localStorage.setItem('mobileSessionId', responseData.mobileSessionId);
-        console.log('✅ Mobile session ID stored from', endpoint, ':', responseData.mobileSessionId);
-      }
-    } catch (e) {
-      console.error('Could not parse response for session ID:', e);
+  try {
+    const response = await fetch(fullUrl, options);
+    
+    // Log response for debugging
+    console.log('📡 API Response:', { 
+      status: response.status, 
+      statusText: response.statusText,
+      url: fullUrl,
+      ok: response.ok 
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ API Error:', { 
+        status: response.status, 
+        statusText: response.statusText,
+        errorText,
+        url: fullUrl
+      });
     }
+    
+    // Extract and store mobile session ID from response
+    if (response.ok && method === 'POST' && (endpoint === '/login' || endpoint === '/api/mobile/login' || endpoint === '/register' || endpoint === '/api/mobile/register')) {
+      try {
+        const responseData = await response.clone().json();
+        
+        if (responseData.mobileSessionId) {
+          localStorage.setItem('mobileSessionId', responseData.mobileSessionId);
+          console.log('✅ Mobile session ID stored from', endpoint, ':', responseData.mobileSessionId);
+        }
+      } catch (e) {
+        console.error('Could not parse response for session ID:', e);
+      }
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('💥 Fetch Error:', { 
+      error, 
+      message: error instanceof Error ? error.message : String(error),
+      url: fullUrl,
+      method 
+    });
+    throw error;
   }
-  
-  return response;
 };
 
 // Convenience functions for common HTTP methods

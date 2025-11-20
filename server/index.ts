@@ -12,33 +12,51 @@ import { sendUpcomingJobReminders, processPlanRenewalReminders } from "./service
 
 const app = express();
 
-// Enable CORS for mobile app
+// Enable CORS for mobile app - more permissive for mobile apps
 app.use(cors({
-  origin: [
-    'http://localhost', 
-    'https://artigianofast.com', 
-    'http://192.168.100.183:3000',
-    'http://10.103.181.15:3000',
-    'capacitor://localhost', 
-    'ionic://localhost',
-    'http://localhost:8100',
-    'http://localhost:4200',
-    'http://localhost:8080',
-    'http://localhost:5173',
-    'http://localhost:4173'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    const allowedOrigins = [
+      'http://localhost', 
+      'https://artigianofast.com', 
+      'http://www.artigianofast.com',
+      'https://www.artigianofast.com',
+      'http://192.168.100.183:3000',
+      'http://10.103.181.15:3000',
+      'capacitor://localhost', 
+      'ionic://localhost',
+      'http://localhost:8100',
+      'http://localhost:4200',
+      'http://localhost:8080',
+      'http://localhost:5173',
+      'http://localhost:4173'
+    ];
+    
+    // Check if origin is in allowed list or if it's a mobile app (no origin)
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      // For mobile apps, allow anyway (they might have null origin)
+      callback(null, true);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'x-mobile-session-id'],
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
 
 // Handle preflight requests specifically for mobile
 app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = req.headers.origin;
+  res.header('Access-Control-Allow-Origin', origin || '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, x-mobile-session-id');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.status(204).end();
 });

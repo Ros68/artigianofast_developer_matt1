@@ -7,9 +7,18 @@
         <domain includeSubdomains="true">192.168.0.1</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
     </domain-config>
+    <!-- Allow HTTPS connections to production server -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">artigianofast.com</domain>
+        <domain includeSubdomains="true">www.artigianofast.com</domain>
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system"/>
+            <certificates src="user"/>
         </trust-anchors>
     </base-config>
 </network-security-config> 
