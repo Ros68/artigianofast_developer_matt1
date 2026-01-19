@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy to Developer Shop
 
 on:
   push:
@@ -7,58 +7,17 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd ~/artigianofast_shop
-            git pull
-            npm install
-            npm run build
-            pm2 restart shop-backend shop-frontend || (pm2 start npm --name "shop-backend" -- start && pm2 start npm --name "shop-frontend" -- run preview -- --port 4175)
-            pm2 save
-```
-
-5. Clicca **"Commit changes..."**
-6. Clicca **"Commit changes"** di nuovo
-
----
-
-### Per il repository artigianofast2026 (website):
-
-1. Vai su: https://github.com/Ros68/artigianofast2026
-
-2. **"Add file"** → **"Create new file"**
-
-3. Nome file:
-```
-   .github/workflows/deploy.yml
-
-
-   name: Deploy to VPS
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd ~/artigianofast2026
-            git pull
-            npm install
-            npm run build
-            pm2 restart website-backend website-frontend || (pm2 start npm --name "website-backend" -- start && pm2 start npm --name "website-frontend" -- run preview -- --port 4174)
-            pm2 save
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /home/developer_shop/artigianofast_shop
+          git pull origin main
+          npm install
+          npm run build
+          pm2 restart all
