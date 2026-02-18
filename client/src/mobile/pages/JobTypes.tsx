@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import MobileLayout from "../components/MobileLayout";
+import { usePermissions } from "../contexts/PermissionContext";
 import { mobileGet, mobileDelete } from "../utils/mobileApi";
 
 // Definisci l'interfaccia per il tipo di lavoro
@@ -24,6 +25,10 @@ export default function JobTypesSettings() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission('canCreateJobTypes');
+  const canEdit = hasPermission('canEditJobTypes');
+  const canDelete = hasPermission('canDeleteJobTypes');
 
   // Carica i tipi di lavoro
   const { data: jobTypes = [], isLoading: isJobTypesLoading } = useQuery<JobType[]>({
@@ -99,15 +104,15 @@ export default function JobTypesSettings() {
     }
   };
 
-  const rightAction = (
-    <Button 
+  const rightAction = canCreate ? (
+    <Button
       size="sm"
       onClick={() => setLocation("/mobile/settings/jobtypes/new")}
     >
       <Plus className="h-4 w-4 mr-2" />
       Nuovo
     </Button>
-  );
+  ) : null;
 
   return (
     <MobileLayout 
@@ -152,20 +157,24 @@ export default function JobTypesSettings() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="ghost" 
+                    {canEdit && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => setLocation(`/mobile/settings/jobtypes/${jobType.id}`)}
                     >
                       <Edit className="h-4 w-4 text-gray-500" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
+                    )}
+                    {canDelete && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteClick(jobType.id, jobType.name)}
                     >
                       <Trash className="h-4 w-4 text-gray-500" />
                     </Button>
+                    )}
                   </div>
                 </div>
                 
@@ -189,13 +198,15 @@ export default function JobTypesSettings() {
         ) : (
           <div className="py-8 text-center">
             <p className="text-gray-500">Nessun tipo di lavoro trovato</p>
-            <Button 
+            {canCreate && (
+            <Button
               className="mt-4"
               onClick={() => setLocation("/mobile/settings/jobtypes/new")}
             >
               <Plus className="h-4 w-4 mr-2" />
               Aggiungi tipo di lavoro
             </Button>
+            )}
           </div>
         )}
       </div>

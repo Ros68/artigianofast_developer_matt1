@@ -11,6 +11,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "../../components/ui/input";
 import MobileLayout from "../components/MobileLayout";
 import { mobileApiCall } from "../utils/mobileApi";
+import { useVisibleFields } from "../hooks/useVisibleFields";
 import { ArrowLeft, Loader2, Plus, X } from "lucide-react";
 // Removed unused Select import
 import { Badge } from "../../components/ui/badge";
@@ -42,6 +43,7 @@ export default function CollaboratorForm() {
   const queryClient = useQueryClient();
   const collaboratorId = params.id ? parseInt(params.id) : undefined;
   const isEditMode = !!collaboratorId && collaboratorId > 0;
+  const { isFieldVisible } = useVisibleFields("collaborators");
   const [isSaving, setIsSaving] = useState(false);
   const [newSkill, setNewSkill] = useState("");
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -307,6 +309,7 @@ export default function CollaboratorForm() {
                 )}
               />
 
+              {isFieldVisible("email") && (
               <FormField
                 control={form.control}
                 name="email"
@@ -314,18 +317,20 @@ export default function CollaboratorForm() {
                   <FormItem>
                     <FormLabel>{t("mobile.forms.collaborator.email")}</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder={t("mobile.forms.collaborator.emailPlaceholder")} 
-                        type="email" 
-                        {...field} 
-                        value={field.value || ""} 
+                      <Input
+                        placeholder={t("mobile.forms.collaborator.emailPlaceholder")}
+                        type="email"
+                        {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              )}
 
+              {isFieldVisible("phone") && (
               <FormField
                 control={form.control}
                 name="phone"
@@ -333,16 +338,17 @@ export default function CollaboratorForm() {
                   <FormItem>
                     <FormLabel>{t("mobile.forms.collaborator.phone")}</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder={t("mobile.forms.collaborator.phonePlaceholder")} 
-                        {...field} 
-                        value={field.value || ""} 
+                      <Input
+                        placeholder={t("mobile.forms.collaborator.phonePlaceholder")}
+                        {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              )}
 
               <FormField
                 control={form.control}

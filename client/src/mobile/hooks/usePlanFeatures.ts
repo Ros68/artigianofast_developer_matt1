@@ -14,11 +14,12 @@ export function usePlanFeatures() {
     queryFn: async () => {
       const res = await fetch("/api/mobile/plan-configuration", {
         headers: { "x-mobile-session-id": localStorage.getItem("mobileSessionId") || "" },
+        cache: "no-store",
       });
       if (!res.ok) throw new Error("Failed to load plan configuration");
       return res.json();
     },
-    staleTime: 60_000,
+    staleTime: 10_000, // 10 seconds - short so plan changes reflect quickly
   });
 
   const hasFeature = (id: string, fallback = false): boolean => {

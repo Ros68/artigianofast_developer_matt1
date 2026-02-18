@@ -13,6 +13,7 @@ import { Button } from '../../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Textarea } from '../../components/ui/textarea';
 import { ArrowLeft } from "lucide-react";
+import { useVisibleFields } from '../hooks/useVisibleFields';
 
 // Interface for JobType
 interface JobType {
@@ -42,6 +43,7 @@ export default function ActivityForm() {
   const isEditMode = !!activityId && activityId > 0;
   const [isSaving, setIsSaving] = useState(false);
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
+  const { isFieldVisible } = useVisibleFields("activities");
 
   const form = useForm<ActivityFormValues>({
     resolver: zodResolver(activitySchema),
@@ -363,66 +365,70 @@ export default function ActivityForm() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrizione</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Descrizione dell'attività" 
-                      {...field} 
-                      className="min-h-[100px]"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-
+            {isFieldVisible('description') && (
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrizione</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Descrizione dell'attività"
+                        {...field}
+                        className="min-h-[100px]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="defaultDuration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Durata prevista (ore)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.5" 
-                        min="0"
-                        placeholder="Ore" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {isFieldVisible('duration') && (
+                <FormField
+                  control={form.control}
+                  name="defaultDuration"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Durata prevista (ore)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          placeholder="Ore"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-              <FormField
-                control={form.control}
-                name="defaultRate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tariffa oraria (€)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
-                        placeholder="€/ora" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {isFieldVisible('rate') && (
+                <FormField
+                  control={form.control}
+                  name="defaultRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tariffa oraria (€)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="€/ora"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
             
             <div className="flex justify-end space-x-2 pt-4">

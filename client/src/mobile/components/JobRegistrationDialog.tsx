@@ -98,7 +98,8 @@ export function JobRegistrationDialog({ isOpen, onClose, jobId }: JobRegistratio
         const errorText = await response.text();
         throw new Error(`Errore nel recuperare le attività: ${response.status} ${errorText}`);
       }
-      return response.json();
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     },
     enabled: isOpen
   });
@@ -136,7 +137,7 @@ export function JobRegistrationDialog({ isOpen, onClose, jobId }: JobRegistratio
 
   // Filtra le attività in base al tipo di lavoro selezionato
   const activities = useMemo(() => {
-    if (!allActivities.length) {
+    if (!allActivities?.length) {
       return [];
     }
     

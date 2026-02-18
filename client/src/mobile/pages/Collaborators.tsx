@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import MobileLayout from "../components/MobileLayout";
 import FeatureGate from "../components/FeatureGate";
 import { usePlanFeatures } from "../hooks/usePlanFeatures";
+import { usePermissions } from "../contexts/PermissionContext";
+import { useVisibleFields } from "../hooks/useVisibleFields";
 import { mobileGet, mobileDelete } from "../utils/mobileApi";
 
 // Definisci l'interfaccia per il collaboratore
@@ -34,6 +36,7 @@ export default function CollaboratorsSettings() {
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { getLimit } = usePlanFeatures();
+  const { hasPermission } = usePermissions();
 
   // Carica i collaboratori
   const { data: collaborators = [], isLoading: isCollaboratorsLoading } = useQuery<Collaborator[]>({
@@ -127,8 +130,12 @@ export default function CollaboratorsSettings() {
 
   const maxCollaborators = getLimit('max_collaborators', -1);
   const atLimit = maxCollaborators !== -1 && collaborators.length >= maxCollaborators;
-  const rightAction = (
-    <Button 
+  const canCreate = hasPermission('canCreateCollaborators');
+  const canEdit = hasPermission('canEditCollaborators');
+  const canDelete = hasPermission('canDeleteCollaborators');
+  const { isFieldVisible } = useVisibleFields("collaborators");
+  const rightAction = canCreate ? (
+    <Button
       size="sm"
       onClick={() => setLocation("/mobile/settings/collaborators/new")}
       disabled={atLimit}
@@ -137,7 +144,7 @@ export default function CollaboratorsSettings() {
       <Plus className="h-4 w-4 mr-2" />
       Nuovo
     </Button>
-  );
+  ) : null;
 
   const content = (
     <MobileLayout 
@@ -194,31 +201,35 @@ export default function CollaboratorsSettings() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="ghost" 
+                    {canEdit && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => setLocation(`/mobile/settings/collaborators/${collaborator.id}`)}
                     >
                       <Edit className="h-4 w-4 text-gray-500" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
+                    )}
+                    {canDelete && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteClick(collaborator.id, collaborator.name)}
                     >
                       <Trash className="h-4 w-4 text-gray-500" />
                     </Button>
+                    )}
                   </div>
                 </div>
                 
                 <div className="mt-2 text-sm text-gray-500 space-y-1">
-                  {collaborator.email && (
+                  {isFieldVisible("email") && collaborator.email && (
                     <p className="flex items-center">
                       <Mail className="h-3 w-3 mr-1 text-gray-400" />
                       {collaborator.email}
                     </p>
                   )}
-                  {collaborator.phone && (
+                  {isFieldVisible("phone") && collaborator.phone && (
                     <p className="flex items-center">
                       <Phone className="h-3 w-3 mr-1 text-gray-400" />
                       {collaborator.phone}
@@ -226,7 +237,7 @@ export default function CollaboratorsSettings() {
                   )}
                 </div>
 
-                {collaborator.skills && collaborator.skills.length > 0 && (
+                {isFieldVisible("skills") && collaborator.skills && collaborator.skills.length > 0 && (
                   <div className="mt-2">
                     <div className="flex flex-wrap gap-1">
                       {collaborator.skills.map((skill, index) => (
@@ -243,7 +254,8 @@ export default function CollaboratorsSettings() {
         ) : (
           <div className="py-8 text-center">
             <p className="text-gray-500">Nessun collaboratore trovato</p>
-            <Button 
+            {canCreate && (
+            <Button
               className="mt-4"
               onClick={() => setLocation("/mobile/settings/collaborators/new")}
               disabled={atLimit}
@@ -251,6 +263,7 @@ export default function CollaboratorsSettings() {
               <Plus className="h-4 w-4 mr-2" />
               Aggiungi collaboratore
             </Button>
+            )}
             {atLimit && (
               <div className="mt-2 text-xs text-amber-700">Hai raggiunto il limite del tuo piano.</div>
             )}

@@ -46,26 +46,30 @@ export default function BottomNav() {
         </FeatureGate>
         
         {/* Lavori */}
-        <button
-          className={`flex flex-col items-center justify-center flex-1 py-2 ${
-            location === '/mobile/jobs' ? 'text-primary' : 'text-gray-500'
-          }`}
-          onClick={() => setLocation('/mobile/jobs')}
-        >
-          <Briefcase className="h-5 w-5" />
-          <span className="text-xs mt-1">{t('mobile.navigation.jobs')}</span>
-        </button>
-        
-        {/* Pulsante + */}
-        <div className="relative flex items-center justify-center flex-1">
+        <FeatureGate feature="job_management">
           <button
-            className="absolute -top-5 bg-blue-600 text-white rounded-full p-3 shadow-lg"
-            onClick={handleAddButtonClick}
-            aria-label="Aggiungi nuovo lavoro"
+            className={`flex flex-col items-center justify-center flex-1 py-2 ${
+              location === '/mobile/jobs' ? 'text-primary' : 'text-gray-500'
+            }`}
+            onClick={() => setLocation('/mobile/jobs')}
           >
-            <span className="text-xl font-bold">+</span>
+            <Briefcase className="h-5 w-5" />
+            <span className="text-xs mt-1">{t('mobile.navigation.jobs')}</span>
           </button>
-        </div>
+        </FeatureGate>
+
+        {/* Pulsante + */}
+        <FeatureGate feature="job_management">
+          <div className="relative flex items-center justify-center flex-1">
+            <button
+              className="absolute -top-5 bg-blue-600 text-white rounded-full p-3 shadow-lg"
+              onClick={handleAddButtonClick}
+              aria-label="Aggiungi nuovo lavoro"
+            >
+              <span className="text-xl font-bold">+</span>
+            </button>
+          </div>
+        </FeatureGate>
         
         {/* Registrazione - visible only if activity_tracking feature */}
         <FeatureGate feature="activity_tracking">

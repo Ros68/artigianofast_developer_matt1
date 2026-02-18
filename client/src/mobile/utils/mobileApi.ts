@@ -7,9 +7,9 @@ const isMobileDevice = () => {
          (window as any).Capacitor?.isNative;
 };
 
-const MOBILE_API_BASE_URL = isMobileDevice() 
-  ? 'https://artigianofast.com'  // Use localhost for development
-  : 'https://artigianofast.com';        // Use localhost for development
+const MOBILE_API_BASE_URL = isMobileDevice()
+  ? 'https://artigianofast.com'  // Use production URL for mobile devices
+  : '';        // Use relative URLs for localhost development (same origin)
 
 
 // Global fetch interceptor to catch ALL API calls

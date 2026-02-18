@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { Badge } from "../../components/ui/badge";
 import { Bell, Mail, MessageCircle, Settings, Activity } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { usePlanFeatures } from "../hooks/usePlanFeatures";
 
 // Schema for notification settings
 const notificationSettingsSchema = z.object({
@@ -73,6 +74,8 @@ interface NotificationSettingsProps {
 export default function NotificationSettings({ onSave }: NotificationSettingsProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { hasFeature } = usePlanFeatures();
+  const collaboratorEnabled = hasFeature('collaborator_management');
   
   const form = useForm<NotificationSettingsValues>({
     resolver: zodResolver(notificationSettingsSchema),
@@ -379,7 +382,7 @@ export default function NotificationSettings({ onSave }: NotificationSettingsPro
           </Card>
 
           {/* Collaborator Creation Notifications */}
-          <Card>
+          {collaboratorEnabled && <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
@@ -458,7 +461,7 @@ export default function NotificationSettings({ onSave }: NotificationSettingsPro
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* Notification Timing */}
           <Card>

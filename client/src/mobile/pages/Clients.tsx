@@ -8,6 +8,8 @@ import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import MobileLayout from "../components/MobileLayout";
 import { usePlanFeatures } from "../hooks/usePlanFeatures";
+import { useVisibleFields } from "../hooks/useVisibleFields";
+import { usePermissions } from "../contexts/PermissionContext";
 import { mobileGet, mobileDelete } from "../utils/mobileApi";
 
 // Definire l'interfaccia per il cliente
@@ -27,6 +29,11 @@ export default function ClientsSettings() {
   const queryClient = useQueryClient();
   const { getLimit, hasFeature } = usePlanFeatures();
   const canManageClients = hasFeature('client_management', true);
+  const { isFieldVisible } = useVisibleFields("clients");
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission('canCreateClients');
+  const canEdit = hasPermission('canEditClients');
+  const canDelete = hasPermission('canDeleteClients');
 
   // Carica i clienti
   const { data: clients = [], isLoading: isClientsLoading } = useQuery<Client[]>({
@@ -124,8 +131,8 @@ export default function ClientsSettings() {
     }
   };
 
-  const rightAction = (
-    <Button 
+  const rightAction = canCreate ? (
+    <Button
       size="sm"
       onClick={() => setLocation("/mobile/settings/clients/new")}
       disabled={!canManageClients || clients.length >= (getLimit('max_clients', -1) === -1 ? Infinity : getLimit('max_clients', 0))}
@@ -134,7 +141,7 @@ export default function ClientsSettings() {
       <Plus className="h-4 w-4 mr-2" />
       Nuovo
     </Button>
-  );
+  ) : null;
 
   return (
     <MobileLayout 
@@ -184,35 +191,39 @@ export default function ClientsSettings() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="ghost" 
+                    {canEdit && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => setLocation(`/mobile/settings/clients/${client.id}`)}
                     >
                       <Edit className="h-4 w-4 text-gray-500" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
+                    )}
+                    {canDelete && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteClick(client.id, client.name)}
                     >
                       <Trash className="h-4 w-4 text-gray-500" />
                     </Button>
+                    )}
                   </div>
                 </div>
                 
                 <div className="mt-2 text-sm text-gray-500 space-y-1">
-                  {client.email && (
+                  {isFieldVisible("email") && client.email && (
                     <p className="flex items-center">
                       Email: {client.email}
                     </p>
                   )}
-                  {client.phone && (
+                  {isFieldVisible("phone") && client.phone && (
                     <p className="flex items-center">
                       Telefono: {client.phone}
                     </p>
                   )}
-                  {client.address && (
+                  {isFieldVisible("address") && client.address && (
                     <p className="flex items-center">
                       Indirizzo: {client.address}
                     </p>
@@ -224,7 +235,8 @@ export default function ClientsSettings() {
         ) : (
           <div className="py-8 text-center">
             <p className="text-gray-500">Nessun cliente trovato</p>
-            <Button 
+            {canCreate && (
+            <Button
               className="mt-4"
               onClick={() => setLocation("/mobile/settings/clients/new")}
               disabled={!canManageClients || clients.length >= (getLimit('max_clients', -1) === -1 ? Infinity : getLimit('max_clients', 0))}
@@ -232,6 +244,7 @@ export default function ClientsSettings() {
               <Plus className="h-4 w-4 mr-2" />
               Aggiungi cliente
             </Button>
+            )}
             {clients.length >= (getLimit('max_clients', -1) === -1 ? Infinity : getLimit('max_clients', 0)) && (
               <div className="mt-2 text-xs text-amber-700">Hai raggiunto il limite massimo di clienti del tuo piano.</div>
             )}

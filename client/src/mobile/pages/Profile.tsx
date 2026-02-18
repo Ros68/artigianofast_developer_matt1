@@ -17,6 +17,8 @@ import { User, Mail, Phone, LogOut, Save, Lock, Building } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { useToast } from "../../hooks/use-toast";
 import { Switch } from "../../components/ui/switch";
+import { useVisibleFields } from "../hooks/useVisibleFields";
+import { usePlanFeatures } from "../hooks/usePlanFeatures";
 
 // Schema per la validazione dei dati del profilo
 const profileSchema = z.object({
@@ -47,6 +49,8 @@ export default function MobileProfile() {
   const { user, logout, updateUserSettings, changePassword } = useMobileAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { isFieldVisible } = useVisibleFields("profile");
+  const { hasFeature } = usePlanFeatures();
 
   // Form del profilo
   const profileForm = useForm<ProfileFormValues>({
@@ -244,6 +248,7 @@ export default function MobileProfile() {
                         </FormItem>
                       )}
                     />
+                    {isFieldVisible("phone") && (
                     <FormField
                       control={profileForm.control}
                       name="phone"
@@ -265,6 +270,7 @@ export default function MobileProfile() {
                         </FormItem>
                       )}
                     />
+                    )}
                     <FormField
                       control={profileForm.control}
                       name="language"
@@ -290,6 +296,8 @@ export default function MobileProfile() {
                       )}
                     />
 
+                    {hasFeature('notifications') && (
+                    <>
                     <Separator className="my-4" />
                     <h3 className="text-sm font-medium mb-2">Notifiche</h3>
 
@@ -355,6 +363,8 @@ export default function MobileProfile() {
                         </FormItem>
                       )}
                     />
+                    </>
+                    )}
 
                     <Button
                       type="submit"

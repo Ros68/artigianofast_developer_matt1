@@ -529,14 +529,14 @@ export default function Settings() {
             <Separator />
             
             {/* Notifiche */}
-            {renderSettingItem(
+            {featureEnabled('notifications') && renderSettingItem(
               <Bell size={20} />,
               t('mobile.settings.notifications'),
               t('mobile.settings.notificationsDescription'),
               <div className="flex items-center gap-2">
-                <Switch 
-                  checked={settings.notificationsEnabled} 
-                  onCheckedChange={(checked) => updateSetting('notificationsEnabled', checked)} 
+                <Switch
+                  checked={settings.notificationsEnabled}
+                  onCheckedChange={(checked) => updateSetting('notificationsEnabled', checked)}
                 />
                 <Button
                   variant="outline"
@@ -594,9 +594,11 @@ export default function Settings() {
                 <div className="text-sm bg-gray-50 p-2 rounded">
                   <span className="font-medium">Lavori:</span> {getFeatureLimit('maxJobs', 50)}
                 </div>
+                {featureEnabled('collaborator_management') && (
                 <div className="text-sm bg-gray-50 p-2 rounded">
                   <span className="font-medium">Collaboratori:</span> {getFeatureLimit('maxCollaborators', 5)}
                 </div>
+                )}
                 <div className="text-sm bg-gray-50 p-2 rounded">
                   <span className="font-medium">Storage:</span> {getFeatureLimit('maxStorage', 5)} GB
                 </div>

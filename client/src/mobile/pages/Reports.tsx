@@ -1,11 +1,12 @@
 import React from "react";
 import MobileLayout from "../components/MobileLayout";
+import FeatureGate from "../components/FeatureGate";
 import { Card, CardContent } from "../../components/ui/card";
-import { 
-  BarChart3, 
-  Clock, 
-  DollarSign, 
-  LineChart 
+import {
+  BarChart3,
+  Clock,
+  DollarSign,
+  LineChart
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useTranslation } from 'react-i18next';
@@ -50,24 +51,32 @@ export default function Reports() {
   };
 
   return (
-    <MobileLayout title={t('mobile.reports.title')} showBackButton={false}>
-      <div className="p-4">
-        <div className="grid grid-cols-2 gap-4">
-          {reports.map((report) => (
-            <Card 
-              key={report.id} 
-              className="hover:border-primary cursor-pointer transition-all"
-              onClick={() => handleReportClick(report.path)}
-            >
-              <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="mb-3 mt-2">{report.icon}</div>
-                <h3 className="font-semibold text-sm mb-1">{report.title}</h3>
-                <p className="text-xs text-gray-500 line-clamp-2">{report.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+    <FeatureGate feature="reports" fallback={
+      <MobileLayout title={t('mobile.reports.title')} showBackButton={false}>
+        <div className="p-4 text-center text-gray-500">
+          {t('mobile.featureNotAvailable', 'Questa funzionalità non è disponibile nel tuo piano.')}
         </div>
-      </div>
-    </MobileLayout>
+      </MobileLayout>
+    }>
+      <MobileLayout title={t('mobile.reports.title')} showBackButton={false}>
+        <div className="p-4">
+          <div className="grid grid-cols-2 gap-4">
+            {reports.map((report) => (
+              <Card
+                key={report.id}
+                className="hover:border-primary cursor-pointer transition-all"
+                onClick={() => handleReportClick(report.path)}
+              >
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className="mb-3 mt-2">{report.icon}</div>
+                  <h3 className="font-semibold text-sm mb-1">{report.title}</h3>
+                  <p className="text-xs text-gray-500 line-clamp-2">{report.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </MobileLayout>
+    </FeatureGate>
   );
 }

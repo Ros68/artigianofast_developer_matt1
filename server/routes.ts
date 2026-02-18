@@ -2138,10 +2138,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (transformedData.yearlyPrice !== undefined && transformedData.yearlyPrice !== null) {
         transformedData.yearlyPrice = transformedData.yearlyPrice.toString();
       }
-      
+      // Ensure features is a JSON string, not an object
+      if (transformedData.features && typeof transformedData.features === 'object') {
+        transformedData.features = JSON.stringify(transformedData.features);
+      }
+      // Remove fields not in DB schema to prevent validation errors
+      delete transformedData.vatRate;
+
       const validatedData = insertSubscriptionPlanSchema.parse(transformedData);
       const plan = await storage.createSubscriptionPlan(validatedData);
-      
+
       return res.status(201).json(plan);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -2169,7 +2175,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (transformedData.yearlyPrice !== undefined && transformedData.yearlyPrice !== null) {
         transformedData.yearlyPrice = transformedData.yearlyPrice.toString();
       }
-      
+      // Ensure features is a JSON string, not an object
+      if (transformedData.features && typeof transformedData.features === 'object') {
+        transformedData.features = JSON.stringify(transformedData.features);
+      }
+      // Remove fields not in DB schema to prevent validation errors
+      delete transformedData.vatRate;
+
       const validatedData = insertSubscriptionPlanSchema.partial().parse(transformedData);
       const updatedPlan = await storage.updateSubscriptionPlan(id, validatedData);
       
@@ -2383,13 +2395,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/plan-configurations", async (req: Request, res: Response) => {
     try {
       log(`Creating plan configuration with data: ${JSON.stringify(req.body)}`, "plan-config");
-      
+
       // Transform features object to JSON string if needed
       const transformedData = { ...req.body };
       if (transformedData.features && typeof transformedData.features === 'object') {
         transformedData.features = JSON.stringify(transformedData.features);
       }
-      
+      // Stringify limits if object
+      if (transformedData.limits && typeof transformedData.limits === 'object') {
+        transformedData.limits = JSON.stringify(transformedData.limits);
+      }
+      // Remove fields not in DB schema
+      delete transformedData.notes;
+      delete transformedData.client_override;
+      delete transformedData.override_reason;
+
       const validatedData = insertPlanConfigurationSchema.parse(transformedData);
       const config = await storage.createPlanConfiguration(validatedData);
       
@@ -2411,13 +2431,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       log(`Updating plan configuration ${id} with data: ${JSON.stringify(req.body)}`, "plan-config");
-      
+
       // Transform features object to JSON string if needed
       const transformedData = { ...req.body };
       if (transformedData.features && typeof transformedData.features === 'object') {
         transformedData.features = JSON.stringify(transformedData.features);
       }
-      
+      // Stringify limits if object
+      if (transformedData.limits && typeof transformedData.limits === 'object') {
+        transformedData.limits = JSON.stringify(transformedData.limits);
+      }
+      // Remove fields not in DB schema
+      delete transformedData.notes;
+      delete transformedData.client_override;
+      delete transformedData.override_reason;
+
       const validatedData = insertPlanConfigurationSchema.partial().parse(transformedData);
       const updatedConfig = await storage.updatePlanConfiguration(id, validatedData);
       

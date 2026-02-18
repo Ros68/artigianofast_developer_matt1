@@ -8,7 +8,7 @@ import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import MobileLayout from "../components/MobileLayout";
 import FeatureGate from "../components/FeatureGate";
-import { usePlanFeatures } from "../hooks/usePlanFeatures";
+import { usePermissions } from "../contexts/PermissionContext";
 import { mobileGet, mobileDelete } from "../utils/mobileApi";
 
 // Definisci l'interfaccia per il ruolo
@@ -25,7 +25,10 @@ export default function RolesSettings() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
-  const { getLimit } = usePlanFeatures();
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission('canCreateRoles');
+  const canEdit = hasPermission('canEditRoles');
+  const canDelete = hasPermission('canDeleteRoles');
 
   // Carica i ruoli
   const { data: roles = [], isLoading: isRolesLoading } = useQuery<Role[]>({
@@ -87,17 +90,15 @@ export default function RolesSettings() {
     }
   };
 
-  const atLimit = false; // roles currently not limited; keep hook for future
-  const rightAction = (
-    <Button 
+  const rightAction = canCreate ? (
+    <Button
       size="sm"
       onClick={() => setLocation("/mobile/settings/roles/new")}
-      disabled={atLimit}
     >
       <Plus className="h-4 w-4 mr-2" />
       Nuovo
     </Button>
-  );
+  ) : null;
 
   const content = (
     <MobileLayout 
@@ -142,20 +143,24 @@ export default function RolesSettings() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="ghost" 
+                    {canEdit && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => setLocation(`/mobile/settings/roles/${role.id}`)}
                     >
                       <Edit className="h-4 w-4 text-gray-500" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
+                    )}
+                    {canDelete && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteClick(role.id, role.name)}
                     >
                       <Trash className="h-4 w-4 text-gray-500" />
                     </Button>
+                    )}
                   </div>
                 </div>
                 
@@ -184,13 +189,15 @@ export default function RolesSettings() {
         ) : (
           <div className="py-8 text-center">
             <p className="text-gray-500">Nessun ruolo trovato</p>
-            <Button 
+            {canCreate && (
+            <Button
               className="mt-4"
               onClick={() => setLocation("/mobile/settings/roles/new")}
             >
               <Plus className="h-4 w-4 mr-2" />
               Aggiungi ruolo
             </Button>
+            )}
           </div>
         )}
       </div>

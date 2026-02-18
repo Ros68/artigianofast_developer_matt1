@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { X, Calendar, Clock, Plus, RefreshCw, Check, MapPin, ChevronDown, Users, FileText } from 'lucide-react';
 import { usePermissions } from '../contexts/PermissionContext';
 import { mobileApiCall } from '../utils/mobileApi';
+import { useVisibleFields } from '../hooks/useVisibleFields';
 
 interface Client {
   id: number;
@@ -887,6 +888,8 @@ export function NewJobModal() {
     }
   });
   const collaboratorFeatureEnabled = planConfig?.features?.collaborator_management === true;
+  const activityFeatureEnabled = planConfig?.features?.activity_tracking !== false;
+  const { isFieldVisible } = useVisibleFields("jobs");
 
   if (!isOpen) return null;
   
@@ -926,7 +929,7 @@ export function NewJobModal() {
               console.log('❌ Form errors details:', Object.keys(errors).map(key => ({ field: key, error: errors[key] })));
             })}>
               <div className="space-y-4">
-                {canViewJobTitle && (
+                {canViewJobTitle && isFieldVisible('title') && (
                   <div>
                     <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.title')}</label>
                     <input 
@@ -968,7 +971,7 @@ export function NewJobModal() {
                 )}
                 
                 {/* Job Location - Permission controlled */}
-                {canViewJobLocation && (
+                {canViewJobLocation && isFieldVisible('location') && (
                   <div>
                     <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.location')}</label>
                     <div className="relative">
@@ -1213,7 +1216,7 @@ export function NewJobModal() {
                             )}
                             
                             {/* Collaboratori per questa specifica attività */}
-                            {activityManagementEnabled && manageByActivities && (
+                            {activityManagementEnabled && manageByActivities && collaboratorFeatureEnabled && (
                               <div>
                                 <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.collaborators')}</label>
                                 <div className="relative">
@@ -1511,7 +1514,7 @@ export function NewJobModal() {
                       )}
                     </div>
                     
-                    {canViewJobDuration && (
+                    {canViewJobDuration && isFieldVisible('duration') && (
                       <div>
                         <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.duration')}</label>
                         <input 
@@ -1528,9 +1531,9 @@ export function NewJobModal() {
                 )}
                 
                 {/* Campi di costo visibili solo se non si gestisce per attività o se isActivityLevel=false - Permission controlled */}
-                {(!activityManagementEnabled || !manageByActivities || !isActivityLevel) && canViewJobFinancials && (
+                {(!activityManagementEnabled || !manageByActivities || !isActivityLevel) && canViewJobFinancials && isFieldVisible('cost') && (
                   <div className="space-y-4">
-                    {canViewJobRate && (
+                    {canViewJobRate && isFieldVisible('rate') && (
                       <div>
                         <div className="flex items-center justify-between mb-1">
                           <label className="block text-sm font-medium">
@@ -1558,7 +1561,7 @@ export function NewJobModal() {
                     )}
                     
                     {/* Nasconde i campi materiali se manageByActivities è true e isActivityLevel è false */}
-                    {!(activityManagementEnabled && manageByActivities && !isActivityLevel) && canViewJobMaterials && (
+                    {!(activityManagementEnabled && manageByActivities && !isActivityLevel) && canViewJobMaterials && isFieldVisible('materials') && (
                       <div>
                         <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.materials')}</label>
                         <textarea 
@@ -1588,7 +1591,7 @@ export function NewJobModal() {
                 )}
 
                 {/* File allegati visibili solo se non si gestisce per attività - Permission controlled */}
-                {(!activityManagementEnabled || !manageByActivities) && canUploadJobPhotos && (
+                {(!activityManagementEnabled || !manageByActivities) && canUploadJobPhotos && isFieldVisible('photos') && (
                   <div>
                     <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.attachedFiles')}</label>
                     <input 
@@ -1641,7 +1644,7 @@ export function NewJobModal() {
                   </div>
                 )}
                 
-                {canViewJobDescription && (
+                {canViewJobDescription && isFieldVisible('description') && (
                   <div>
                     <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.description')}</label>
                     <textarea 
@@ -1654,7 +1657,7 @@ export function NewJobModal() {
                   </div>
                 )}
 
-                {canViewJobStatus && (
+                {canViewJobStatus && isFieldVisible('status') && (
                   <div>
                     <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.status')}</label>
                     <select 
@@ -1670,7 +1673,7 @@ export function NewJobModal() {
                   </div>
                 )}
 
-                {canViewJobPriority && (
+                {canViewJobPriority && isFieldVisible('priority') && (
                   <div>
                     <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.priority')}</label>
                     <select 
@@ -1686,7 +1689,7 @@ export function NewJobModal() {
                   </div>
                 )}
 
-                {canViewJobEndDate && (
+                {canViewJobEndDate && isFieldVisible('endDate') && (
                   <div>
                     <label className="block text-sm font-medium mb-1">{t('mobile.jobs.modal.newJob.form.endDate')}</label>
                     <div className="relative">

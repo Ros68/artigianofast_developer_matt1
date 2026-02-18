@@ -123,19 +123,32 @@ const availableFields = {
   ]
 };
 
+// Safe JSON parse helper
+function safeParseJSON(value: string | undefined | null): Record<string, any> {
+  if (!value) return {};
+  if (typeof value === 'object') return value as Record<string, any>;
+  try {
+    const parsed = JSON.parse(value);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export default function ClientPlanOverridesPage() {
   const [, setLocation] = useLocation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingOverride, setEditingOverride] = useState<any>(null);
   const [selectedPlanFeatures, setSelectedPlanFeatures] = useState<any>(null);
+  const [activeOverrideTab, setActiveOverrideTab] = useState("functionality");
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  // Fetch data
+  // Fetch users (artisans who bought plans) - NOT clients (artisan's customers)
   const { data: clients, isLoading: clientsLoading } = useQuery({
-    queryKey: ["/api/clients"],
+    queryKey: ["/api/users"],
     queryFn: async () => {
-      const response = await apiRequest("/api/clients");
+      const response = await apiRequest("/api/users");
       return await response.json();
     },
   });
@@ -271,10 +284,11 @@ export default function ClientPlanOverridesPage() {
     form.reset({
       userId: override.userId,
       planId: override.planId,
-      features: override.features ? JSON.parse(override.features) : {},
+      features: safeParseJSON(override.features) as any,
       isActive: override.isActive,
       notes: override.notes || ''
     });
+    setActiveOverrideTab("functionality");
     setIsDialogOpen(true);
   };
 
@@ -285,10 +299,10 @@ export default function ClientPlanOverridesPage() {
     }
   };
 
-  // Get client name by ID
+  // Get client name by ID (users have fullName, not name)
   const getClientName = (userId: number) => {
     const client = clients?.find((c: any) => c.id === userId);
-    return client ? client.name : `${t("client")} ${userId}`;
+    return client ? (client.fullName || client.username || client.name) : `${t("client")} ${userId}`;
   };
 
   // Get plan name by ID
@@ -300,44 +314,35 @@ export default function ClientPlanOverridesPage() {
   // Get override status
   const getOverrideStatus = (override: any) => {
     if (!override.features) return t("no_modifications");
-    
-    try {
-      const features = JSON.parse(override.features);
-      const modifiedFeatures = Object.keys(features).filter(key => 
-        key !== 'client_override' && key !== 'override_reason' && features[key] !== undefined
-      );
-      
-      if (modifiedFeatures.length === 0) return t("no_modifications");
-      return `${modifiedFeatures.length} ${t("modifications")}`;
-    } catch {
-      return t("error_parsing");
-    }
+
+    const features = safeParseJSON(override.features);
+    const modifiedFeatures = Object.keys(features).filter(key =>
+      key !== 'client_override' && key !== 'override_reason' && features[key] !== undefined
+    );
+
+    if (modifiedFeatures.length === 0) return t("no_modifications");
+    return `${modifiedFeatures.length} ${t("modifications")}`;
   };
 
   // Load base plan features when a plan is selected
   const loadBasePlanFeatures = (planId: number) => {
     const selectedPlan = plans?.find((p: any) => p.id === planId);
     if (selectedPlan && selectedPlan.features) {
-      try {
-        const planFeatures = JSON.parse(selectedPlan.features);
-        setSelectedPlanFeatures(planFeatures);
-        
-        // Update form with base plan features as defaults
-        const currentFeatures = form.getValues('features');
-        const updatedFeatures = { ...currentFeatures };
-        
-        // Set base plan features as defaults
-        availableFeatures.forEach(feature => {
-          if (planFeatures[feature.id] !== undefined) {
-            (updatedFeatures as any)[feature.id] = planFeatures[feature.id];
-          }
-        });
-        
-        form.setValue('features', updatedFeatures);
-      } catch (error) {
-        console.error('Error parsing plan features:', error);
-        setSelectedPlanFeatures(null);
-      }
+      const planFeatures = safeParseJSON(selectedPlan.features);
+      setSelectedPlanFeatures(planFeatures);
+
+      // Update form with base plan features as defaults
+      const currentFeatures = form.getValues('features');
+      const updatedFeatures = { ...currentFeatures };
+
+      // Set base plan features as defaults
+      availableFeatures.forEach(feature => {
+        if (planFeatures[feature.id] !== undefined) {
+          (updatedFeatures as any)[feature.id] = planFeatures[feature.id];
+        }
+      });
+
+      form.setValue('features', updatedFeatures);
     } else {
       setSelectedPlanFeatures(null);
     }
@@ -522,7 +527,7 @@ export default function ClientPlanOverridesPage() {
                         <SelectContent>
                           {clients?.map((client: any) => (
                             <SelectItem key={client.id} value={client.id.toString()}>
-                              {client.name} ({client.email})
+                              {client.fullName || client.username || client.name} {client.email ? `(${client.email})` : ''}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -711,7 +716,7 @@ export default function ClientPlanOverridesPage() {
               )}
 
               {/* Features Configuration */}
-              <Tabs defaultValue="functionality" className="w-full">
+              <Tabs value={activeOverrideTab} onValueChange={setActiveOverrideTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="functionality">{t("functionality")}</TabsTrigger>
                   <TabsTrigger value="pages">{t("pages")}</TabsTrigger>

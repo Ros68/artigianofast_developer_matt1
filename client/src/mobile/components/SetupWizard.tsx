@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { Progress } from "../../components/ui/progress";
 import { CheckCircle, ArrowRight, ArrowLeft, Building2, Users, Briefcase, FileText, UserCog, UsersRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { usePlanFeatures } from "../hooks/usePlanFeatures";
 
 interface SetupStep {
   id: string;
@@ -13,9 +14,10 @@ interface SetupStep {
   icon: React.ReactNode;
   path: string;
   required: boolean;
+  featureFlag?: string;
 }
 
-const setupSteps: SetupStep[] = [
+const allSetupSteps: SetupStep[] = [
   {
     id: "jobtypes",
     title: "Tipi di Lavoro",
@@ -30,7 +32,8 @@ const setupSteps: SetupStep[] = [
     description: "Definisci le attività associate ai tipi di lavoro",
     icon: <FileText className="h-6 w-6" />,
     path: "/mobile/settings/activities",
-    required: false
+    required: false,
+    featureFlag: "activity_tracking"
   },
   {
     id: "roles",
@@ -38,7 +41,8 @@ const setupSteps: SetupStep[] = [
     description: "Crea i ruoli del personale e le loro autorizzazioni",
     icon: <UserCog className="h-6 w-6" />,
     path: "/mobile/settings/roles",
-    required: false
+    required: false,
+    featureFlag: "collaborator_management"
   },
   {
     id: "collaborators",
@@ -46,7 +50,8 @@ const setupSteps: SetupStep[] = [
     description: "Aggiungi i membri del tuo team e assegna i ruoli",
     icon: <UsersRound className="h-6 w-6" />,
     path: "/mobile/settings/collaborators",
-    required: false
+    required: false,
+    featureFlag: "collaborator_management"
   },
   {
     id: "clients",
@@ -73,9 +78,16 @@ interface SetupWizardProps {
 export default function SetupWizard({ onComplete }: SetupWizardProps) {
   const [, setLocation] = useLocation();
   const { t } = useTranslation();
+  const { hasFeature } = usePlanFeatures();
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [isVisible, setIsVisible] = useState(false);
+
+  // Filter steps based on plan features
+  const setupSteps = useMemo(() =>
+    allSetupSteps.filter(step => !step.featureFlag || hasFeature(step.featureFlag)),
+    [hasFeature]
+  );
 
   useEffect(() => {
     // Check if setup is already completed

@@ -31,6 +31,7 @@ import { Separator } from "../../../components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "../../../components/ui/radio-group";
 import { Label } from "../../../components/ui/label";
 import { Card, CardContent } from "../../../components/ui/card";
+import { usePlanFeatures } from "../../hooks/usePlanFeatures";
 
 export interface ReportFilterOptions {
   year?: number;
@@ -51,6 +52,9 @@ interface ReportFiltersProps {
 }
 
 export default function ReportFilters({ onApplyFilters }: ReportFiltersProps) {
+  const { hasFeature } = usePlanFeatures();
+  const collaboratorEnabled = hasFeature('collaborator_management');
+
   // Stato dei filtri
   const [filters, setFilters] = useState<ReportFilterOptions>({
     timeframe: 'month'
@@ -289,10 +293,11 @@ export default function ReportFilters({ onApplyFilters }: ReportFiltersProps) {
                   </div>
                   
                   {/* Collaboratore */}
+                  {collaboratorEnabled && (
                   <div className="space-y-2">
                     <Label htmlFor="collaborator">Collaboratore</Label>
-                    <Select 
-                      value={filters.collaborator} 
+                    <Select
+                      value={filters.collaborator}
                       onValueChange={(value) => handleFilterChange('collaborator', value)}
                     >
                       <SelectTrigger>
@@ -308,6 +313,7 @@ export default function ReportFilters({ onApplyFilters }: ReportFiltersProps) {
                       </SelectContent>
                     </Select>
                   </div>
+                  )}
                 </div>
                 
                 <SheetFooter className="mt-8">
@@ -350,7 +356,7 @@ export default function ReportFilters({ onApplyFilters }: ReportFiltersProps) {
               </div>
             )}
             
-            {filters.collaborator && filterOptions.collaborators?.find((c: any) => c.id.toString() === filters.collaborator) && (
+            {collaboratorEnabled && filters.collaborator && filterOptions.collaborators?.find((c: any) => c.id.toString() === filters.collaborator) && (
               <div className="bg-blue-600/10 text-primary text-xs py-1 px-2 rounded-full">
                 Collaboratore: {filterOptions.collaborators.find((c: any) => c.id.toString() === filters.collaborator).name}
               </div>

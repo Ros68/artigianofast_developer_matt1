@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useToast } from "../../hooks/use-toast";
 import { usePermissions } from "../contexts/PermissionContext";
+import { useVisibleFields } from "../hooks/useVisibleFields";
 import MobileLayout from "../components/MobileLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -29,6 +30,7 @@ export default function ClientForm({ clientId, isEditMode = false }: ClientFormP
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { hasPermission } = usePermissions();
+  const { isFieldVisible } = useVisibleFields("clients");
   const [formData, setFormData] = useState<ClientFormData>({
     name: "",
     type: "residential",
@@ -150,8 +152,8 @@ export default function ClientForm({ clientId, isEditMode = false }: ClientFormP
           />
         </div>
         
-        {/* Client Type - Check permission */}
-        {hasPermission('canViewClientType') && (
+        {/* Client Type - Check permission and plan visibility */}
+        {hasPermission('canViewClientType') && isFieldVisible('type') && (
           <div>
             <Label>Tipo Cliente</Label>
             <RadioGroup 
@@ -175,8 +177,8 @@ export default function ClientForm({ clientId, isEditMode = false }: ClientFormP
           </div>
         )}
         
-        {/* Email - Check permission */}
-        {hasPermission('canViewClientEmail') && (
+        {/* Email - Check permission and plan visibility */}
+        {hasPermission('canViewClientEmail') && isFieldVisible('email') && (
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -191,8 +193,8 @@ export default function ClientForm({ clientId, isEditMode = false }: ClientFormP
           </div>
         )}
         
-        {/* Phone - Check permission */}
-        {hasPermission('canViewClientPhone') && (
+        {/* Phone - Check permission and plan visibility */}
+        {hasPermission('canViewClientPhone') && isFieldVisible('phone') && (
           <div>
             <Label htmlFor="phone">Telefono</Label>
             <Input
@@ -206,8 +208,8 @@ export default function ClientForm({ clientId, isEditMode = false }: ClientFormP
           </div>
         )}
         
-        {/* Address - Check permission */}
-        {hasPermission('canViewClientAddress') && (
+        {/* Address - Check permission and plan visibility */}
+        {hasPermission('canViewClientAddress') && isFieldVisible('address') && (
           <div>
             <Label htmlFor="address">Indirizzo</Label>
             <Textarea

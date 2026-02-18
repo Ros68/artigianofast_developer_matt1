@@ -865,6 +865,28 @@ export class MemStorage implements IStorage {
       lastBillingDate: new Date(),
       nextBillingDate: new Date(new Date().setMonth(new Date().getMonth() + 1))
     });
+
+    // Assign plan to test mobile users so plan enforcement works
+    this.createUserSubscription({
+      userId: 2,
+      planId: 2, // Professional
+      status: "active",
+      startDate: new Date(),
+      endDate: null,
+      billingFrequency: "monthly",
+      lastBillingDate: new Date(),
+      nextBillingDate: new Date(new Date().setMonth(new Date().getMonth() + 1))
+    });
+    this.createUserSubscription({
+      userId: 3,
+      planId: 2, // Professional
+      status: "active",
+      startDate: new Date(),
+      endDate: null,
+      billingFrequency: "monthly",
+      lastBillingDate: new Date(),
+      nextBillingDate: new Date(new Date().setMonth(new Date().getMonth() + 1))
+    });
   }
 
   // User methods

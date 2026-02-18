@@ -66,10 +66,23 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Safe JSON parse helper — always returns an object
+function safeParseFeatures(value: string | undefined | null): Record<string, any> {
+  if (!value) return {};
+  if (typeof value === 'object') return value as Record<string, any>;
+  try {
+    const parsed = JSON.parse(value);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export default function AdminSettingsPlansPage() {
   const [location, setLocation] = useLocation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<any>(null);
+  const [activeDialogTab, setActiveDialogTab] = useState("features");
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -194,6 +207,7 @@ export default function AdminSettingsPlansPage() {
       features: "",
     });
     setEditingPlan(null);
+    setActiveDialogTab("features");
     setIsDialogOpen(true);
   };
 
@@ -212,6 +226,7 @@ export default function AdminSettingsPlansPage() {
       features: plan.features,
     });
     setEditingPlan(plan);
+    setActiveDialogTab("features");
     setIsDialogOpen(true);
   };
 
@@ -248,7 +263,7 @@ export default function AdminSettingsPlansPage() {
         <div className="flex items-center gap-4">
           <LanguageSelector />
           <Button
-            onClick={() => setIsDialogOpen(true)}
+            onClick={openCreateDialog}
             className="flex items-center gap-2"
           >
             <Plus size={16} />
@@ -357,7 +372,7 @@ export default function AdminSettingsPlansPage() {
                               {(() => {
                                 // Mostra un riepilogo delle funzionalità attivate
                                 try {
-                                  const featuresObj = plan.features ? JSON.parse(plan.features) : {};
+                                  const featuresObj = safeParseFeatures(plan.features);
                                   const enabledFeatures = Object.keys(featuresObj);
                                   const totalFeatures = availableFeatures.length;
                                   
@@ -429,14 +444,8 @@ export default function AdminSettingsPlansPage() {
                                       features: plan.features,
                                     });
                                     setEditingPlan(plan);
+                                    setActiveDialogTab("features");
                                     setIsDialogOpen(true);
-                                    // Forza la visualizzazione della scheda delle funzionalità
-                                    setTimeout(() => {
-                                      const featureTab = document.querySelector('[data-state="inactive"][value="features"]');
-                                      if (featureTab) {
-                                        (featureTab as HTMLElement).click();
-                                      }
-                                    }, 100);
                                   }}
                                   className="flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700"
                                 >
@@ -659,7 +668,7 @@ export default function AdminSettingsPlansPage() {
 
               <div className="mt-6">
                 <h3 className="text-lg font-medium mb-4">{t("advanced_settings")}</h3>
-                <Tabs defaultValue="features">
+                <Tabs value={activeDialogTab} onValueChange={setActiveDialogTab}>
                   <TabsList className="mb-4 w-full">
                     <TabsTrigger value="features">{t("features")}</TabsTrigger>
                     {/* <TabsTrigger value="pages">{t("pages")}</TabsTrigger> */}
@@ -672,13 +681,13 @@ export default function AdminSettingsPlansPage() {
                       control={form.control}
                       name="features"
                       render={({ field }) => {
-                        const featuresObject = field.value ? JSON.parse(field.value) : {};
+                        const featuresObject = safeParseFeatures(field.value);
                         const updateFeature = (id: string, enabled: boolean, limit?: number) => {
                           const newFeatures = { ...featuresObject };
                           if (enabled) {
                             newFeatures[id] = limit !== undefined ? limit : true;
                           } else {
-                            delete newFeatures[id];
+                            newFeatures[id] = false;
                           }
                           field.onChange(JSON.stringify(newFeatures));
                         };
@@ -729,9 +738,10 @@ export default function AdminSettingsPlansPage() {
                                   </div>
                                   <div className="divide-y">
                                     {category.features.map((feature) => {
-                                      const enabled = featuresObject[feature.id] !== undefined;
-                                      const hasLimit = typeof featuresObject[feature.id] === 'number';
-                                      const limitValue = hasLimit ? featuresObject[feature.id] : 0;
+                                      const rawValue = featuresObject[feature.id];
+                                      const hasLimit = typeof rawValue === 'number';
+                                      const enabled = hasLimit ? true : !!rawValue;
+                                      const limitValue = hasLimit ? rawValue : 0;
                                       
                                       return (
                                         <div key={feature.id} className={`p-4 ${enabled ? "bg-white" : "bg-gray-50"}`}>
@@ -791,7 +801,7 @@ export default function AdminSettingsPlansPage() {
                       control={form.control}
                       name="features"
                       render={({ field }) => {
-                        const featuresObject = field.value ? JSON.parse(field.value) : {};
+                        const featuresObject = safeParseFeatures(field.value);
                         const pageAccess = featuresObject.page_access || {};
                         
                         const updatePageAccess = (pageId: string, accessType: 'view' | 'edit' | 'none') => {
@@ -855,7 +865,7 @@ export default function AdminSettingsPlansPage() {
                       control={form.control}
                       name="features"
                       render={({ field }) => {
-                        const featuresObject = field.value ? JSON.parse(field.value) : {};
+                        const featuresObject = safeParseFeatures(field.value);
                         const visibleFields = featuresObject.visible_fields || {};
                         
                         // Campi per diverse entità e pagine dell'applicazione
@@ -1021,7 +1031,7 @@ export default function AdminSettingsPlansPage() {
                       control={form.control}
                       name="features"
                       render={({ field }) => {
-                        const featuresObject = field.value ? JSON.parse(field.value) : {};
+                        const featuresObject = safeParseFeatures(field.value);
                         const permissions = featuresObject.permissions || {};
                         
                         const permissionGroups = [

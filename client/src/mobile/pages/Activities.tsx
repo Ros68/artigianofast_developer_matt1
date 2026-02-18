@@ -7,6 +7,8 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import MobileLayout from "../components/MobileLayout";
+import FeatureGate from "../components/FeatureGate";
+import { usePermissions } from "../contexts/PermissionContext";
 import { mobileGet, mobileDelete } from "../utils/mobileApi";
 
 // Definisci l'interfaccia per l'attività
@@ -30,6 +32,10 @@ export default function ActivitiesSettings() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission('canCreateActivities');
+  const canEdit = hasPermission('canEditActivities');
+  const canDelete = hasPermission('canDeleteActivities');
 
   // Carica le attività
   const { data: activities = [], isLoading: isActivitiesLoading } = useQuery<Activity[]>({
@@ -110,19 +116,26 @@ export default function ActivitiesSettings() {
     }
   };
 
-  const rightAction = (
-    <Button 
+  const rightAction = canCreate ? (
+    <Button
       size="sm"
       onClick={() => setLocation("/mobile/settings/activities/new")}
     >
       <Plus className="h-4 w-4 mr-2" />
       Nuovo
     </Button>
-  );
+  ) : null;
 
   return (
-    <MobileLayout 
-      title="Attività" 
+    <FeatureGate feature="activity_tracking" fallback={
+      <MobileLayout title="Attività">
+        <div className="p-4 text-center text-gray-500">
+          Questa funzionalità non è disponibile nel tuo piano.
+        </div>
+      </MobileLayout>
+    }>
+    <MobileLayout
+      title="Attività"
       rightAction={rightAction}
       showNavButtons={true}
       prevPage="/mobile/settings/jobtypes"
@@ -165,20 +178,24 @@ export default function ActivitiesSettings() {
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="ghost" 
+                    {canEdit && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => setLocation(`/mobile/settings/activities/${activity.id}`)}
                     >
                       <Edit className="h-4 w-4 text-gray-500" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
+                    )}
+                    {canDelete && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteClick(activity.id, activity.name)}
                     >
                       <Trash className="h-4 w-4 text-gray-500" />
                     </Button>
+                    )}
                   </div>
                 </div>
                 
@@ -202,16 +219,19 @@ export default function ActivitiesSettings() {
         ) : (
           <div className="py-8 text-center">
             <p className="text-gray-500">Nessuna attività trovata</p>
-            <Button 
+            {canCreate && (
+            <Button
               className="mt-4"
               onClick={() => setLocation("/mobile/settings/activities/new")}
             >
               <Plus className="h-4 w-4 mr-2" />
               Aggiungi attività
             </Button>
+            )}
           </div>
         )}
       </div>
     </MobileLayout>
+    </FeatureGate>
   );
 }

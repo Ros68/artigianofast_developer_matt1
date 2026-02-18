@@ -9,11 +9,14 @@ import { Calendar, User, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
+import { usePlanFeatures } from "../hooks/usePlanFeatures";
+import FeatureGate from "../components/FeatureGate";
 
 export default function MobileDashboard() {
   const [, setLocation] = useLocation();
   const { user } = useMobileAuth();
   const { t } = useTranslation();
+  const { hasFeature } = usePlanFeatures();
   const [greeting, setGreeting] = useState(t('mobile.dashboard.greeting.afternoon'));
   
   // Add error boundary and debugging
@@ -142,27 +145,31 @@ export default function MobileDashboard() {
 
         {/* Contatori statistiche */}
         <div className="grid grid-cols-2 gap-3">
+          {hasFeature('job_management') && (
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <div className="text-sm text-slate-500">{t('mobile.dashboard.stats.activeJobs')}</div>
             <div className="text-3xl font-bold mt-1">
               {statsLoading ? '...' : (stats?.lavoriAttivi || defaultStats.lavoriAttivi)}
             </div>
           </div>
-          
+          )}
+
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <div className="text-sm text-slate-500">{t('mobile.dashboard.stats.totalClients')}</div>
             <div className="text-3xl font-bold mt-1">
               {statsLoading ? '...' : (stats?.clientiTotali || defaultStats.clientiTotali)}
             </div>
           </div>
-          
+
+          {hasFeature('job_management') && (
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <div className="text-sm text-slate-500">{t('mobile.dashboard.stats.completedJobs')}</div>
             <div className="text-3xl font-bold mt-1">
               {statsLoading ? '...' : (stats?.lavoriCompletati || defaultStats.lavoriCompletati)}
             </div>
           </div>
-          
+          )}
+
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <div className="text-sm text-slate-500">{t('mobile.dashboard.stats.monthlyIncome')}</div>
             <div className="text-3xl font-bold mt-1">
@@ -171,27 +178,28 @@ export default function MobileDashboard() {
           </div>
         </div>
 
-        {/* Impegni di oggi */}
+        {/* Impegni di oggi - only if calendar feature enabled */}
+        {hasFeature('calendar') && (
         <div className="mt-6">
           <h3 className="text-xl font-medium mb-3">{t('mobile.dashboard.appointments.title')}</h3>
-          
+
           <div className="space-y-3">
             {appointmentsLoading ? (
               <div className="text-center py-4 text-slate-500">{t('mobile.dashboard.appointments.loading')}</div>
             ) : (appointments || defaultAppointments).map((appointment: any) => (
               <div key={appointment.id} className={`border-l-4 border-${appointment.color}-500 bg-white p-3 rounded-r-lg shadow-sm`} style={{borderLeftColor: appointment.color === 'blue' ? '#3b82f6' : appointment.color === 'yellow' ? '#f59e0b' : '#a855f7'}}>
                 <div className="font-medium">{appointment.title}</div>
-                
+
                 <div className="flex items-center text-sm text-slate-500 mt-1">
                   <User className="h-3.5 w-3.5 mr-1" />
                   {appointment.client}
                 </div>
-                
+
                 <div className="flex items-center text-sm text-slate-500">
                   <MapPin className="h-3.5 w-3.5 mr-1" />
                   {appointment.location}
                 </div>
-                
+
                 <div className="mt-2">
                   <span className={`bg-${appointment.color}-100 text-${appointment.color}-700 text-xs font-medium px-2 py-1 rounded`} style={{backgroundColor: appointment.color === 'blue' ? '#dbeafe' : appointment.color === 'yellow' ? '#fef3c7' : '#f3e8ff', color: appointment.color === 'blue' ? '#1d4ed8' : appointment.color === 'yellow' ? '#b45309' : '#7e22ce'}}>
                     {appointment.startTime} - {appointment.endTime}
@@ -201,19 +209,21 @@ export default function MobileDashboard() {
             ))}
           </div>
         </div>
+        )}
 
-        {/* Reports Section */}
+        {/* Reports Section - only if reports feature enabled */}
+        {hasFeature('reports') && (
         <div className="mt-6">
           <h3 className="text-xl font-medium mb-3">{t('mobile.dashboard.reports.title')}</h3>
-          
+
           <div className="grid grid-cols-1 gap-3">
             <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-slate-500">{t('mobile.dashboard.reports.efficiency')}</div>
                   <div className="text-2xl font-bold text-green-600">
-                    {statsLoading ? '...' : 
-                      stats?.lavoriCompletati && stats?.totalJobs ? 
+                    {statsLoading ? '...' :
+                      stats?.lavoriCompletati && stats?.totalJobs ?
                       Math.round((stats.lavoriCompletati / stats.totalJobs) * 100) : 0}%
                   </div>
                 </div>
@@ -224,14 +234,14 @@ export default function MobileDashboard() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-slate-500">Valore Medio per Lavoro</div>
                   <div className="text-2xl font-bold text-blue-600">
-                    €{statsLoading ? '...' : 
-                      stats?.totalJobs && stats?.incassoMensile ? 
+                    €{statsLoading ? '...' :
+                      stats?.totalJobs && stats?.incassoMensile ?
                       Math.round(stats.incassoMensile / stats.totalJobs) : 0}
                   </div>
                 </div>
@@ -244,6 +254,7 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
+        )}
       </div>
     </MobileLayout>
   );

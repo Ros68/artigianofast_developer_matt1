@@ -8,6 +8,8 @@ import { Button } from '../../components/ui/button';
 import { Calendar, Clock, MapPin, Briefcase, Tag, FileText, User, XCircle } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 import ActivityTracker from './ActivityTracker';
+import { mobileApiCall } from '../utils/mobileApi';
+import { useVisibleFields } from '../hooks/useVisibleFields';
 
 interface JobDetailsDialogProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export function JobDetailsDialog({ isOpen, onClose, jobId }: JobDetailsDialogPro
   const [confirmCancel, setConfirmCancel] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isFieldVisible } = useVisibleFields("jobs");
 
   // Query per ottenere i dettagli del lavoro selezionato
   const { data: job = {}, isLoading: isJobLoading } = useQuery({
@@ -157,7 +160,7 @@ export function JobDetailsDialog({ isOpen, onClose, jobId }: JobDetailsDialogPro
                 <div>
                   <p className="text-sm font-medium">Data</p>
                   <p className="text-sm text-gray-600">{formatDate(job.startDate)}</p>
-                  {job.endDate && (
+                  {job.endDate && isFieldVisible('endDate') && (
                     <p className="text-sm text-gray-600">
                       fino a {formatDate(job.endDate)}
                     </p>
@@ -173,13 +176,15 @@ export function JobDetailsDialog({ isOpen, onClose, jobId }: JobDetailsDialogPro
                 </div>
               </div>
 
-              <div className="flex items-start">
-                <MapPin size={16} className="mr-2 mt-1 text-gray-500" />
-                <div>
-                  <p className="text-sm font-medium">Indirizzo</p>
-                  <p className="text-sm text-gray-600">{job.location || 'Non specificato'}</p>
+              {isFieldVisible('location') && (
+                <div className="flex items-start">
+                  <MapPin size={16} className="mr-2 mt-1 text-gray-500" />
+                  <div>
+                    <p className="text-sm font-medium">Indirizzo</p>
+                    <p className="text-sm text-gray-600">{job.location || 'Non specificato'}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex items-start">
                 <Briefcase size={16} className="mr-2 mt-1 text-gray-500" />
@@ -189,15 +194,17 @@ export function JobDetailsDialog({ isOpen, onClose, jobId }: JobDetailsDialogPro
                 </div>
               </div>
 
-              <div className="flex items-start">
-                <Tag size={16} className="mr-2 mt-1 text-gray-500" />
-                <div>
-                  <p className="text-sm font-medium">Stato</p>
-                  <p className="text-sm text-gray-600">{getJobStatusLabel(job.status)}</p>
+              {isFieldVisible('status') && (
+                <div className="flex items-start">
+                  <Tag size={16} className="mr-2 mt-1 text-gray-500" />
+                  <div>
+                    <p className="text-sm font-medium">Stato</p>
+                    <p className="text-sm text-gray-600">{getJobStatusLabel(job.status)}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {job.description && (
+              {job.description && isFieldVisible('description') && (
                 <div className="flex items-start">
                   <FileText size={16} className="mr-2 mt-1 text-gray-500" />
                   <div>
@@ -207,7 +214,7 @@ export function JobDetailsDialog({ isOpen, onClose, jobId }: JobDetailsDialogPro
                 </div>
               )}
 
-              {job.notes && (
+              {job.notes && isFieldVisible('notes') && (
                 <div className="flex items-start">
                   <FileText size={16} className="mr-2 mt-1 text-gray-500" />
                   <div>

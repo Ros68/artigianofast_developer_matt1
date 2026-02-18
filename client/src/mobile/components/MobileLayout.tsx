@@ -21,6 +21,7 @@ import { useMobileAuth } from "../contexts/MobileAuthContext";
 import { mobileApiCall } from "../utils/mobileApi";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { usePlanFeatures } from "../hooks/usePlanFeatures";
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -49,6 +50,7 @@ export default function MobileLayout({
   const [location, setLocation] = useLocation();
   const { user, logout } = useMobileAuth();
   const { t } = useTranslation();
+  const { hasFeature } = usePlanFeatures();
 
   const handleLogout = async () => {
     try {
@@ -117,55 +119,61 @@ export default function MobileLayout({
                     </div>
                     
                     <div className="flex-1 py-4 space-y-1">
-                      <Button 
-                        variant={isActive("/mobile/dashboard") ? "default" : "ghost"} 
-                        className="w-full justify-start" 
+                      <Button
+                        variant={isActive("/mobile/dashboard") ? "default" : "ghost"}
+                        className="w-full justify-start"
                         onClick={() => setLocation("/mobile/dashboard")}
                       >
                         <Home size={18} className="mr-2" />
                         {t('mobile.navigation.dashboard')}
                       </Button>
-                      
-                      <Button 
-                        variant={isActive("/mobile/calendar") ? "default" : "ghost"} 
-                        className="w-full justify-start" 
+
+                      {hasFeature('calendar') && (
+                      <Button
+                        variant={isActive("/mobile/calendar") ? "default" : "ghost"}
+                        className="w-full justify-start"
                         onClick={() => setLocation("/mobile/calendar")}
                       >
                         <Calendar size={18} className="mr-2" />
                         {t('mobile.navigation.calendar')}
                       </Button>
-                      
-                      <Button 
-                        variant={isActive("/mobile/jobs") ? "default" : "ghost"} 
-                        className="w-full justify-start" 
+                      )}
+
+                      {hasFeature('job_management') && (
+                      <Button
+                        variant={isActive("/mobile/jobs") ? "default" : "ghost"}
+                        className="w-full justify-start"
                         onClick={() => setLocation("/mobile/jobs")}
                       >
                         <Briefcase size={18} className="mr-2" />
                         {t('mobile.navigation.jobs')}
                       </Button>
-                      
-                      <Button 
-                        variant={isActive("/mobile/report") || isActive("/mobile/stats") ? "default" : "ghost"} 
-                        className="w-full justify-start" 
+                      )}
+
+                      {hasFeature('reports') && (
+                      <Button
+                        variant={isActive("/mobile/report") || isActive("/mobile/stats") ? "default" : "ghost"}
+                        className="w-full justify-start"
                         onClick={() => setLocation("/mobile/report")}
                       >
                         <BarChart size={18} className="mr-2" />
                         Report
                       </Button>
-                      
-                      
-                      <Button 
-                        variant={isActive("/mobile/profile") ? "default" : "ghost"} 
-                        className="w-full justify-start" 
+                      )}
+
+
+                      <Button
+                        variant={isActive("/mobile/profile") ? "default" : "ghost"}
+                        className="w-full justify-start"
                         onClick={() => setLocation("/mobile/profile")}
                       >
                         <User size={18} className="mr-2" />
                         {t('mobile.navigation.profile')}
                       </Button>
-                      
-                      <Button 
-                        variant={isActive("/mobile/settings") ? "default" : "ghost"} 
-                        className="w-full justify-start" 
+
+                      <Button
+                        variant={isActive("/mobile/settings") ? "default" : "ghost"}
+                        className="w-full justify-start"
                         onClick={() => setLocation("/mobile/settings")}
                       >
                         <Settings size={18} className="mr-2" />

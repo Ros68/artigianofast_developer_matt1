@@ -11,6 +11,7 @@ import { JobRegistrationDialog } from "../components/JobRegistrationDialog";
 import { JobDetailsDialog } from "../components/JobDetailsDialog";
 
 import ActivityTracker from "../components/ActivityTracker";
+import { useVisibleFields } from "../hooks/useVisibleFields";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { useToast } from "../../hooks/use-toast";
@@ -95,6 +96,8 @@ export default function Jobs(props: any) {
   // Ordiniamo sempre di default per data più recente
   const [sortBy, setSortBy] = useState("date_desc");
   
+  const { isFieldVisible } = useVisibleFields("jobs");
+
   // Get translated options
   const jobTypes = getJobTypes(t);
   const jobStatuses = getJobStatuses(t);
@@ -376,21 +379,25 @@ export default function Jobs(props: any) {
             <span>{formattedTime}</span>
           </div>
           
-          {job.location && (
+          {isFieldVisible("location") && job.location && (
             <div className="flex items-center space-x-1 text-sm text-gray-600">
               <MapPin size={14} />
               <span>{job.location}</span>
             </div>
           )}
-          
+
           <div className="flex items-center justify-between mt-3">
+            {isFieldVisible("type") && (
             <div className={`px-2 py-1 rounded-full text-xs ${jobTypeColor} text-white`}>
               {getJobTypeLabel(job.type)}
             </div>
-            
+            )}
+
+            {isFieldVisible("status") && (
             <div className={`px-2 py-1 rounded-full text-xs ${jobStatusStyle}`}>
               {getJobStatusLabel(job.status)}
             </div>
+            )}
           </div>
         </div>
       </div>

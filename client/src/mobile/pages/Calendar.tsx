@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { 
-  format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, 
+import {
+  format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval,
   isSameMonth, isToday, addDays, startOfWeek, isSameDay,
   addWeeks, subWeeks,
   endOfWeek, isWithinInterval
@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "../../lib/utils";
 import MobileLayout from "../components/MobileLayout";
+import FeatureGate from "../components/FeatureGate";
 
 import { JobRegistrationDialog } from "../components/JobRegistrationDialog";
 
@@ -958,6 +959,13 @@ export default function Calendar() {
   };
   
   return (
+    <FeatureGate feature="calendar" fallback={
+      <MobileLayout title={t('mobile.calendar.title')}>
+        <div className="p-4 text-center text-gray-500">
+          {t('mobile.featureNotAvailable', 'Questa funzionalità non è disponibile nel tuo piano.')}
+        </div>
+      </MobileLayout>
+    }>
     <MobileLayout title={t('mobile.calendar.title')}>
       <div className="p-4 pb-20">
         <div className="flex flex-col space-y-4">
@@ -1087,6 +1095,7 @@ export default function Calendar() {
         </div>
       </div>
     </MobileLayout>
+    </FeatureGate>
   );
 }
 // "use client";
