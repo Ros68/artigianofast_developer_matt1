@@ -1,0 +1,48 @@
+rules:
+  include:
+    - "server/"
+    - "client/"
+    - "shared/"
+    - "mobile/"
+    - "capacitor/"
+    - "types/"
+    - "migrations/"
+
+  exclude:
+    - "node_modules/"
+    - "build/"
+    - "dist/"
+    - "public/"
+    - "android/"
+    - "ios/"
+    - ".github/"
+    - "mysql-conf/"
+    - "mysql-init/"
+
+  protected_files:
+    - ".env"
+    - ".env.production"
+    - "capacitor.config.json"
+    - "package-lock.json"
+    - "yarn.lock"
+
+  branch:
+    base: "main"
+    feature_prefix: "sweep-fix/"
+
+  pull_request:
+    title_prefix: "[AI Fix]"
+    explain_changes: true
+    auto_request_review: false
+
+  languages:
+    - javascript
+    - typescript
+    - json
+    - sql
+
+  default_prompt: |
+    Analizza il problema, identifica la causa principale e proponi una soluzione robusta.
+    Mantieni la compatibilità con Node.js, React, MySQL e Capacitor.js.
+    Se modifichi query MySQL, assicurati che siano sicure e ottimizzate.
+    Spiega ogni modifica nella PR.
